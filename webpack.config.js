@@ -1,8 +1,8 @@
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin=require('html-webpack-plugin');
-const webpack=require(webpack);
+const webpack=require('webpack');
 const path=require('path');
-const CleanWabpackPlugin=require('clean-webpack-plugin');
+const {CleanWebpackPlugin} = require('_clean-webpack-plugin@3.0.0@clean-webpack-plugin');
 module.exports={
     entry:'./index.js',//入口文件
     output:{
@@ -14,18 +14,20 @@ module.exports={
         rules:[
             {
                 test:/\.js$/,
+                exclude:/node_modules/,
                 use:{
                     loader:'babel-loader',//所有的js都会使用babel-loader进行编译
+                    options:{//仍然支持使用 query 参数来设置选项，但是这种方式已被废弃
+                        presets:['@babel/preset-env','@babel/preset-react']//env包含了多个JS的版本(预设解析方式)，这里的配置可以分离出来，写道.babelrc文件中
+                    }
                 },
                 // query:{
                 //     presets:['env','react']//env包含了多个JS的版本
                 // }
-                options:{//仍然支持使用 query 参数来设置选项，但是这种方式已被废弃
-                    presets:['env','react']//env包含了多个JS的版本(预设解析方式)，这里的配置可以分离出来，写道.babelrc文件中
-                }
             },
             {
                 test:/\.css$/,
+                exclude:/node_modules/,
                 use:[
                     // {
                     //     loader:'style-loader',//style-loader为 css 对象提供了use()和unuse()两种方法可以用来加载和卸载css
@@ -52,6 +54,7 @@ module.exports={
             },
             {
                 test:/\.scss$/,//遇到这种文件时，会倒叙的方式(sass-loader,css-loader,style-loader)使用如下三个loader
+                exclude:/node_modules/,
                 use:[
                     // {
                     //     loader:'style-loader'//将JS字符串生成为style节点
@@ -76,6 +79,7 @@ module.exports={
                 //file-loader:解析图片地址,把图片从源文件拷贝到目标文件并且修改源文件的名称
                 //url-loader:可以在文件比较小的时候,直接变成base64镶嵌到页面中
                 test:/\.(png|jpg|jepg|gif|svg)$/,
+                exclude:/node_modules/,
                 use:{
                     loader:'url-loader',
                     options:{
@@ -87,6 +91,7 @@ module.exports={
         ]
     },
     plugins:[
+        new CleanWebpackPlugin(),
         new MiniCssExtractPlugin({
             // Options similar to the same options in webpackOptions.output
             // both options are optional
@@ -104,12 +109,11 @@ module.exports={
         new webpack.ProvidePlugin({//webpack.ProvidePlugin参数是键值对形式，键就是我们项目中使用的变量名，值就是键所指向的库
             '$':'juqery'
         }),
-        new CleanWabpackPlugin(['dist']),
         new webpack.DefinePlugin({
             NODE_ENV:JSON.stringify(process.env.NODE_ENV)
         })
     ],//加S的都是数组
-    devServe:{//配置开发服务器
+    devServer:{//配置开发服务器
         contentBase:path.resolve(__dirname,'dist'),//静态文件根目录
         port:9000,//端口
         hot:true,
